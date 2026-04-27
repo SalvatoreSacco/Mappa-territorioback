@@ -64,6 +64,17 @@ export class AssegnazioniService {
     return this.getAssegnazione(result.id);
   }
 
+  async deleteAssegnazione(id: number): Promise<void> {
+    const result = await this.db.query(
+      'DELETE FROM assegnazioni WHERE id = $1',
+      [id],
+    );
+    if (result.rowCount === 0) {
+      const { NotFoundException } = await import('@nestjs/common');
+      throw new NotFoundException(`Assegnazione ${id} non trovata`);
+    }
+  }
+
   private async getAssegnazione(id: number): Promise<Assegnazione> {
     const query = `
       SELECT 

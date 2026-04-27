@@ -1,45 +1,49 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode } from '@nestjs/common';
+import {
+  Controller, Get, Post, Put, Delete,
+  Body, Param, HttpCode, UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { IsString, MinLength } from 'class-validator';
 import { CategorieService, Categoria } from './categorie.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-export interface CreateCategoriaDto {
-  nome: string;
+export class CreateCategoriaDto {
+  @IsString() @MinLength(1) nome: string;
 }
 
 @Controller('categorie')
 export class CategorieController {
   constructor(private readonly categorieService: CategorieService) {}
 
-  /** GET /categorie - Tutte le categorie */
   @Get()
   async getAllCategorie(): Promise<Categoria[]> {
     return this.categorieService.getAllCategorie();
   }
 
-  /** GET /categorie/:id */
   @Get(':id')
-  async getCategoriaById(@Param('id') id: string): Promise<Categoria> {
-    return this.categorieService.getCategoriaById(parseInt(id, 10));
+  async getCategoriaById(@Param('id', ParseIntPipe) id: number): Promise<Categoria> {
+    return this.categorieService.getCategoriaById(id);
   }
 
-  /** POST /categorie - Crea una nuova categoria */
   @Post()
+  @UseGuards(JwtAuthGuard)
   async createCategoria(@Body() dto: CreateCategoriaDto): Promise<Categoria> {
     return this.categorieService.createCategoria(dto.nome);
   }
 
-  /** PUT /categorie/:id - Rinomina una categoria */
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   async updateCategoria(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateCategoriaDto,
   ): Promise<Categoria> {
-    return this.categorieService.updateCategoria(parseInt(id, 10), dto.nome);
+    return this.categorieService.updateCategoria(id, dto.nome);
   }
 
-  /** DELETE /categorie/:id */
   @Delete(':id')
   @HttpCode(204)
-  async deleteCategoria(@Param('id') id: string): Promise<void> {
-    return this.categorieService.deleteCategoria(parseInt(id, 10));
+  @UseGuards(JwtAuthGuard)
+  async deleteCategoria(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.categorieService.deleteCategoria(id);
   }
 }

@@ -1,34 +1,28 @@
-﻿import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { IsString, MinLength } from 'class-validator';
 import { UsersService, User } from './users.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-export interface CreateUserDto {
-  name: string;
+export class CreateUserDto {
+  @IsString() @MinLength(1) name: string;
 }
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  /**
-   * GET /users - Get all users
-   */
   @Get()
   async getAllUsers(): Promise<User[]> {
     return this.usersService.getAllUsers();
   }
 
-  /**
-   * GET /users/:id - Get user by ID
-   */
   @Get(':id')
-  async getUserById(@Param('id') id: string): Promise<User | null> {
-    return this.usersService.getUserById(parseInt(id, 10));
+  async getUserById(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
+    return this.usersService.getUserById(id);
   }
 
-  /**
-   * POST /users - Create a new user
-   */
   @Post()
+  @UseGuards(JwtAuthGuard)
   async createUser(@Body() dto: CreateUserDto): Promise<User> {
     return this.usersService.createUser(dto.name);
   }

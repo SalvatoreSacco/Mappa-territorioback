@@ -43,3 +43,11 @@ CREATE TABLE IF NOT EXISTS operatori (
 -- Create index on operatori for faster queries
 CREATE INDEX IF NOT EXISTS idx_operatori_comune_id ON operatori(comune_id);
 CREATE INDEX IF NOT EXISTS idx_operatori_categoria_id ON operatori(categoria_id);
+
+-- Admin users for authentication
+CREATE TABLE IF NOT EXISTS admin_users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
